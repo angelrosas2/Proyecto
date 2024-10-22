@@ -4,6 +4,9 @@
 #include "archivo.h"
 #include "lista.h"
 
+Nodo *lista = NULL;
+char bufer[MAX_LINE_LENGTH]; 
+
 Nodo* leerArchivo(const char *nombreArchivo) 
 {
     FILE *archivo = fopen(nombreArchivo, "r");
@@ -13,16 +16,11 @@ Nodo* leerArchivo(const char *nombreArchivo)
         return 0;
     }
 
-    Nodo *lista = NULL;
-    char bufer[256]; 
-
     while (fgets(bufer, sizeof(bufer), archivo)) 
     {
 
-        bufer[strcspn(bufer, "\n")] = '\0'; /*La función retorna el número de caracteres leídos de
-                                            la subcadena hasta que halla alguno de los caracteres de "\n". El carácter nulo no se cuenta.*/
-
-        insertarNodo(&lista, bufer);
+        bufer[strcspn(bufer, "\n")] = '\0'; /* Remplaza el salto de linea por terminador de cadena*/
+        insertarNodo(&lista, bufer); // Solo se usa la producción, no identificadores por ahora
     }
 
     fclose(archivo);

@@ -2,10 +2,11 @@
 #include "lista.h"
 #include "archivo.h"
 
-int main() {
+int main() 
+{
     printf("Inicialización\n");
 
-    const char *nombreArchivo = "archivo.txt"; //gramatica (1,2,7 etc)...
+    const char *nombreArchivo = "gramatica7.txt"; //gramatica (1,2,7 etc)...
     Nodo *lista = leerArchivo(nombreArchivo);
 
     // Verificación de lista
