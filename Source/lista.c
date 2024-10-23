@@ -50,7 +50,7 @@ void insertarNodo(Nodo **cab, const char *ruleIdentifier, const char *production
 void imprimirLista(Nodo *cab)
 {
     Nodo *aux = cab;
-    while (aux != NULL) 
+    while (aux) 
     {
         printf("Identificador: %s, Producción: %s\n", aux->ruleIdentifier[0] ? aux->ruleIdentifier : "(Sin identificador)", aux->production);
         aux = aux->liga;
