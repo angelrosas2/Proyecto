@@ -55,7 +55,7 @@ void agregActNodo(NODO **cab, const char *regla, const char *prod)
         agregProduc(exisNodo, prod); //Si lo encontró, agrega la producción
     }
     else{
-        NOO *nuevoN= creaNodo(regla, prod);
+        NODO *nuevoN= creaNodo(regla, prod);
 
         if(!*cab)
             *cab= nuevoN;
@@ -124,7 +124,7 @@ NODO* crearLinkedLista(FILE *archivo)
         linea[strcspn(linea, "\n")] = '\0';
 
         //dividir la linea en la regla y la produccion
-        dividirLinea(linea, regla, produccion);
+        dividirLinea(linea, regla, prod);
 
         //agregar o actualizar el nodo en la lista enlazada
         agregActNodo(&cab, regla, prod);
