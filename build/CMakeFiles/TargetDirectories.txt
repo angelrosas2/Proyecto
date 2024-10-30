@@ -1,0 +1,3 @@
+C:/Users/Angel/Desktop/Programación/ProyectoLenguajes/build/CMakeFiles/ProyectoMain.dir
+C:/Users/Angel/Desktop/Programación/ProyectoLenguajes/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Angel/Desktop/Programación/ProyectoLenguajes/build/CMakeFiles/ZERO_CHECK.dir

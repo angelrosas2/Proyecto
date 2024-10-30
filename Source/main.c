@@ -32,17 +32,22 @@ NODO* encontrarNodo(NODO *cab, const char *regla)
 
 }
 
-//Funcion para agregar producción 
+// Función para agregar producción
 
-void agregProduc(NODO *nod, const char *prod)
-{
-    size_t nuevoTam= strlen(nod->prod) + strlen(prod) + 4;
-    nod->prod= (char *)realloc(nod->prod, nuevoTam);
+void agregProduc(NODO *nod, const char *prod) {
+    // Verifica si la producción ya está en nod->prod para evitar duplicados
+    if (strstr(nod->prod, prod) == NULL) {
+        size_t nuevoTam = strlen(nod->prod) + strlen(prod) + 4;
+        nod->prod = (char *)realloc(nod->prod, nuevoTam);
 
-    strcat(nod->prod, " | ");
-    strcat(nod->prod, prod);
-
+        // Solo agrega " | " si nod->prod no está vacío
+        if (strlen(nod->prod) > 0) {
+            strcat(nod->prod, " | ");
+        }
+        strcat(nod->prod, prod);
+    }
 }
+
 
 //Función para agregar un nuevo nodo o actualizar uno existente
 
@@ -80,32 +85,28 @@ void liberarListaEnlazada(NODO *cab)
     NODO *actual= cab;
     NODO *sigNodo;
 
-    while (actual)
+    while (actual != NULL)
     {
-        sigNodo= actual->sig;
+        sigNodo = actual->sig;
         free(actual->regla);
         free(actual->prod);
         free(actual);
-        actual = actual->sig;
+        actual = sigNodo;
     }
 }
 
-//Funcion para divir una linea en identificador de regla y produccion
-
-void dividirLinea(const char *linea, char *regla, char *prod)
-{
-    //Encontrar la posicion de "->" en la linea
+// Función para dividir una línea en identificador de regla y producción
+void dividirLinea(const char *linea, char *regla, char *prod) {
+    // Encontrar la posición de "->" en la línea
     const char *delimitador = strstr(linea, "->");
-    if(delimitador != NULL)
-    {
-        //copiar la parte antes de "->" en la regla
+    if (delimitador != NULL) {
+        // Copiar la parte antes de "->" en la regla
         strncpy(regla, linea, delimitador - linea);
-        regla[delimitador - linea] = '\n';
+        regla[delimitador - linea] = '\0';  // Colocar el terminador nulo al final de "regla"
 
-        //copiar la parte despues de "->" en a produccion
-        strcpy(prod, delimitador + 2); //se salta el "->"
+        // Copiar la parte después de "->" en la producción
+        strcpy(prod, delimitador + 2);  // Se salta el "->"
     }
-
 }
 
 //Funcion una lista enlazada a partir de un archivo
@@ -117,7 +118,7 @@ NODO* crearLinkedLista(FILE *archivo)
     char prod[MAX_LINE_LENGTH];
 
     //Leer el archivo linea por linea y almacenar cada linea en un nuevo nodo o actualizarlo
-    while (fget(linea, sizeof(linea), archivo))
+    while (fgets(linea, sizeof(linea), archivo))
     {
 
         //eliminar el carácter de nueva línea si está presente
@@ -146,7 +147,7 @@ void imprimirLista(NODO* cab)
 
 int main()
 {
-    FILE *archivo = fopen("gramatica2.txt","r");
+    FILE *archivo = fopen("Resources/gramatica2.txt","r");
     if(archivo == NULL)
     {
         perror("Error opening file");
