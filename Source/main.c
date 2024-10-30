@@ -146,7 +146,7 @@ void imprimirLista(NODO* cab)
 
 int main()
 {
-    FILE *archivo = fopen("gramatica1.txt","r");
+    FILE *archivo = fopen("gramatica2.txt","r");
     if(archivo == NULL)
     {
         perror("Error opening file");

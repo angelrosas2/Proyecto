@@ -15,7 +15,7 @@ struct NODO *sig;
 //Funciones 
 NODO* crearNodo(const char *regla, const char *prod);
 void agregNodo(NODO **cab, const char *regla, const char *prod);
-void liberarLinkedLista(NODO *cab);
+void liberarListaEnlazada(NODO *cab);
 NODO* crearLinkedLista(FILE *file);
 void imprimirLista(NODO *cab);
 
