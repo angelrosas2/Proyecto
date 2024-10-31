@@ -7,10 +7,12 @@
 // Estructura de Nodo
 
 typedef struct NODO {
-char *regla;
-char *prod;
-struct NODO *sig;
+    char *regla;
+    char *prod;
+    struct NODO *sig;  // Puntero sig
+    struct NODO *ant;  // Puntero al nodo anterior
 } NODO;
+
 
 //Funciones 
 NODO* crearNodo(const char *regla, const char *prod);
@@ -23,3 +25,6 @@ void dividirLinea(const char *linea, char *regla, char *prod);
 NODO* encontrarNodo(NODO *cab, const char *regla);
 void agregProduc(NODO *nod, const char *prod);
 void agregActNodo(NODO **cab, const char *regla);
+
+void eliminarRecursividad(NODO **cab);
+void imprimirExpresionRegular(NODO *cab);

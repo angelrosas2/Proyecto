@@ -8,9 +8,10 @@
 NODO* creaNodo(const char *regla, const char *prod)
 {
     NODO *nuevoN = (NODO *)malloc(sizeof(NODO));
-    nuevoN->regla= strdup(regla);
-    nuevoN->prod= strdup(prod);
-    nuevoN->sig= NULL;
+    nuevoN->regla = strdup(regla);
+    nuevoN->prod = strdup(prod);
+    nuevoN->sig = NULL;
+    nuevoN->ant = NULL;
 
     return(nuevoN);
 }
@@ -33,10 +34,10 @@ NODO* encontrarNodo(NODO *cab, const char *regla)
 }
 
 // Función para agregar producción
-
-void agregProduc(NODO *nod, const char *prod) {
+void agregProduc(NODO *nod, const char *prod) 
+{
     // Verifica si la producción ya está en nod->prod para evitar duplicados
-    if (strstr(nod->prod, prod) == NULL) {
+    if (!strstr(nod->prod, prod)) {
         size_t nuevoTam = strlen(nod->prod) + strlen(prod) + 4;
         nod->prod = (char *)realloc(nod->prod, nuevoTam);
 
@@ -51,29 +52,21 @@ void agregProduc(NODO *nod, const char *prod) {
 
 //Función para agregar un nuevo nodo o actualizar uno existente
 
-void agregActNodo(NODO **cab, const char *regla, const char *prod)
-{
-    NODO *exisNodo= encontrarNodo(*cab, regla);
-
-    if(exisNodo)
-    {
-        agregProduc(exisNodo, prod); //Si lo encontró, agrega la producción
-    }
-    else{
-        NODO *nuevoN= creaNodo(regla, prod);
-
-        if(!*cab)
-            *cab= nuevoN;
-        else{
-            NODO *aux=*cab;
-
-            while (aux->sig)
-            {
-                aux=aux->sig;
+void agregActNodo(NODO **cab, const char *regla, const char *prod) {
+    NODO *exisNodo = encontrarNodo(*cab, regla);
+    if (exisNodo) {
+        agregProduc(exisNodo, prod); // Si lo encontró, agrega la producción
+    } else {
+        NODO *nuevoN = creaNodo(regla, prod);
+        if (!*cab) {
+            *cab = nuevoN;
+        } else {
+            NODO *aux = *cab;
+            while (aux->sig) {
+                aux = aux->sig;
             }
-
-            aux->sig= nuevoN;
-            
+            aux->sig = nuevoN;
+            nuevoN->ant = aux;
         }
     }
 }
@@ -96,7 +89,8 @@ void liberarListaEnlazada(NODO *cab)
 }
 
 // Función para dividir una línea en identificador de regla y producción
-void dividirLinea(const char *linea, char *regla, char *prod) {
+void dividirLinea(const char *linea, char *regla, char *prod) 
+{
     // Encontrar la posición de "->" en la línea
     const char *delimitador = strstr(linea, "->");
     if (delimitador != NULL) {
@@ -109,35 +103,26 @@ void dividirLinea(const char *linea, char *regla, char *prod) {
     }
 }
 
-//Funcion una lista enlazada a partir de un archivo
-NODO* crearLinkedLista(FILE *archivo)
-{
+// Función para crear una lista doblemente enlazada a partir de un archivo
+NODO* crearLinkedLista(FILE *archivo) {
     NODO *cab = NULL;
-    char linea[MAX_LINE_LENGTH];
-    char regla[MAX_LINE_LENGTH];
-    char prod[MAX_LINE_LENGTH];
-
-    //Leer el archivo linea por linea y almacenar cada linea en un nuevo nodo o actualizarlo
-    while (fgets(linea, sizeof(linea), archivo))
+    char linea[256];
+    char regla[256];
+    char prod[256];
+    while (fgets(linea, sizeof(linea), archivo)) 
     {
-
-        //eliminar el carácter de nueva línea si está presente
         linea[strcspn(linea, "\n")] = '\0';
-
-        //dividir la linea en la regla y la produccion
         dividirLinea(linea, regla, prod);
-
-        //agregar o actualizar el nodo en la lista enlazada
         agregActNodo(&cab, regla, prod);
     }
-
-return cab;
+    return cab;
 }
 
 //Funcion para imprimir la lista enlazada
 void imprimirLista(NODO* cab)
 {
     NODO *actual = cab;
+
     while(actual != NULL)
     {
         printf("%s -> %s\n", actual->regla, actual -> prod);
@@ -145,24 +130,230 @@ void imprimirLista(NODO* cab)
     }
 }
 
+//PASO 2 Hacia abajo
+void primeraSustitucion(NODO *cab) 
+{
+    NODO *actual = cab;
+    while (actual) 
+    {
+        // Buscar patrones de la forma A -> aA
+        char *prod = actual->prod;
+        char *token = strtok(strdup(prod), " | ");
+        char nuevaProd[1024] = "";
+        int primero = 1;
+        
+        while (token) 
+        {
+            if (strlen(token) >= 2 && token[strlen(token)-1] == actual->regla[0]) 
+            {
+                // Es de la forma aA
+                if (!primero) strcat(nuevaProd, " | ");
+                char temp[256];
+                snprintf(temp, sizeof(temp), "{%c}", token[0]);
+                strcat(nuevaProd, temp);
+                if (strlen(token) > 2) 
+                {
+                    // Si hay más caracteres entre 'a' y 'A'
+                    strcat(nuevaProd, "(");
+                    strncat(nuevaProd, token + 1, strlen(token) - 2);
+                    strcat(nuevaProd, ")");
+                }
+            } else {
+                if (!primero) strcat(nuevaProd, " | ");
+                strcat(nuevaProd, token);
+            }
+            primero = 0;
+            token = strtok(NULL, " | ");
+        }
+        
+        // Actualizar la producción
+        free(actual->prod);
+        actual->prod = strdup(nuevaProd);
+        
+        // Realizar sustitución descendente
+        NODO *siguiente = actual->sig;
+        while (siguiente) 
+        {
+            char *pos = strstr(siguiente->prod, actual->regla);
+            if (pos) 
+            {
+                char nuevaProd[1024] = "";
+                size_t preLen = pos - siguiente->prod;
+                strncpy(nuevaProd, siguiente->prod, preLen);
+                strcat(nuevaProd, actual->prod);
+                strcat(nuevaProd, pos + strlen(actual->regla));
+                
+                free(siguiente->prod);
+                siguiente->prod = strdup(nuevaProd);
+            }
+            siguiente = siguiente->sig;
+        }
+        
+        actual = actual->sig;
+    }
+}
+
+
+//PASO 3 hacia arriba
+void segundaSustitucion(NODO *cab) 
+{
+    // Ir al último nodo
+    NODO *actual = cab;
+    while (actual->sig) 
+        actual = actual->sig;
+    
+    while (actual) 
+    {
+        // Buscar patrones de la forma A -> aA
+        char *prod = actual->prod;
+        char *token = strtok(strdup(prod), " | ");
+        char nuevaProd[1024] = "";
+        int primero = 1;
+        
+        while (token) 
+        {
+            if (strlen(token) >= 2 && token[strlen(token)-1] == actual->regla[0]) 
+            {
+                // Es de la forma aA
+                if (!primero) strcat(nuevaProd, " | ");
+                char temp[256];
+                snprintf(temp, sizeof(temp), "{%c}", token[0]);
+                strcat(nuevaProd, temp);
+                if (strlen(token) > 2) 
+                {
+                    strcat(nuevaProd, "(");
+                    strncat(nuevaProd, token + 1, strlen(token) - 2);
+                    strcat(nuevaProd, ")");
+                }
+            } else {
+                if (!primero) strcat(nuevaProd, " | ");
+                strcat(nuevaProd, token);
+            }
+            primero = 0;
+            token = strtok(NULL, " | ");
+        }
+        
+        // Actualizar la producción
+        free(actual->prod);
+        actual->prod = strdup(nuevaProd);
+        
+        // Realizar sustitución ascendente
+        NODO *anterior = actual->ant;
+        while (anterior) 
+        {
+            char *pos = strstr(anterior->prod, actual->regla);
+            if (pos) 
+            {
+                char nuevaProd[1024] = "";
+                size_t preLen = pos - anterior->prod;
+                strncpy(nuevaProd, anterior->prod, preLen);
+                strcat(nuevaProd, actual->prod);
+                strcat(nuevaProd, pos + strlen(actual->regla));
+                
+                free(anterior->prod);
+                anterior->prod = strdup(nuevaProd);
+            }
+            anterior = anterior->ant;
+        }
+        
+        actual = actual->ant;
+    }
+}
+
+
+
+// Reemplazo de "{x}" por "x*"
+void reemplazarLlavesPorAsterisco(NODO *cab) 
+{
+    NODO *actual = cab;
+    while (actual) 
+    {
+        char *prod = actual->prod;
+        char nuevaProd[1024] = "";
+        char *pos = prod;
+        
+        while (*pos) 
+        {
+            if (*pos == '{') 
+            {
+                char *cierre = strchr(pos, '}');
+                if (cierre && (cierre - pos) == 2) 
+                {
+                    // Encontramos un patrón {x}
+                    strncat(nuevaProd, pos + 1, 1);  // Añadir x
+                    strcat(nuevaProd, "*");          // Añadir *
+                    pos = cierre + 1;
+                } else 
+                {
+                    strncat(nuevaProd, pos, 1);
+                    pos++;
+                }
+            } 
+            else 
+            {
+                strncat(nuevaProd, pos, 1);
+                pos++;
+            }
+        }
+        
+        free(actual->prod);
+        actual->prod = strdup(nuevaProd);
+        actual = actual->sig;
+    }
+}
+
+void ImpExpRegRes(NODO *cab) {
+    if (cab == NULL) 
+        return NULL;
+    printf("La Expresion resultante es: %s\n", cab->prod);
+}
+
+
 int main()
 {
+
+// PASO 1 AGRUPAR REGLAS
+
     FILE *archivo = fopen("Resources/gramatica2.txt","r");
     if(archivo == NULL)
     {
-        perror("Error opening file");
+        perror("Error al abrir el archivo");
         return 1;
     }
 
+    //ListaDoblementeEnlazada
     NODO *cab = crearLinkedLista(archivo);
-
     fclose(archivo);
+        
+    //Imprimir reglas agrupadas
+    printf("Paso no. 1: \nLas Expresiones agrupadas son: \n");
+    imprimirLista(cab); 
 
-    //imprimir la lista Enlazada
-    imprimirLista(cab);
+//PASO 2 SUSTITUCION DESCENDENTE
+    primeraSustitucion(cab);
+    printf("\nPaso no. 2:\n1era Sustitucion: \n");
+    imprimirLista(cab); 
+
+//PASO 3 SUSTITUCION ASCENDENTE
+    segundaSustitucion(cab);
+    printf("\nPaso no. 3:\n2nda Sustitucion: \n");
+    imprimirLista(cab); 
+
+//Remplazo de coincidencias con el patrón "{a}" por "a*":
+    reemplazarLlavesPorAsterisco(cab);
+    printf("\n Asteriscos Cambiados \n");
+    imprimirLista(cab); 
+
+    //imprimirLista(cab);
+
+//IMPRIMIR EXPRESION REGULAR RESULTANTE 
+    ImpExpRegRes(cab); 
 
     //Liberar la lista
     liberarListaEnlazada(cab);
 
     return 0;
 }
+
+
+
