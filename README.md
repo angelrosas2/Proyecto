@@ -1,17 +1,18 @@
-Programa en C: Lectura de archivo y almacenamiento en una lista enlazada
+Programa en C: Gramatica Regular a Expresion Regular
 ========================================================================
 
-Este programa en C lee un archivo de texto, línea por línea, y almacena cada línea en una lista enlazada. Cada nodo de la lista contiene una línea del archivo. Al final, el contenido de la lista se imprime en la consola y se libera la memoria utilizada.
+Este programa en C lee un archivo de texto con una gramatica dada, línea por línea, y almacena cada línea en una lista enlazada agrupando de manera correcta cada regla de la grámatica proporcionada. Cada nodo de la lista contiene las cabezas de la reglas.
+Posteriormente se elaboran los pasos para reducir las reglas a una sola expresion regular, sustituyendo producciones e iteraciones.
 
 Estructura de Archivos
 ----------------------
 
 El programa está dividido en varios archivos en el código:
 
-1.  **main.c**: Archivo principal que inicia la ejecución.
+1.  **Source**: Código y material necesario para la compilación
     
-2.  **lista.h / lista.c**: Contiene las definiciones de las estructuras y las funciones para manejar la lista.
+    **Resources**: Material utilizado para obtener las gramaticas
     
-3.  **archivo.h / archivo.c**: Contiene las funciones relacionadas con la lectura de archivos.
+    **cMakeList**: Material necesario para vincular archivos de main.c, main.h y resources
 
 >  Angel de Jesus Ruiz Rosas 8-)
