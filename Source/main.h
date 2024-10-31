@@ -26,5 +26,7 @@ NODO* encontrarNodo(NODO *cab, const char *regla);
 void agregProduc(NODO *nod, const char *prod);
 void agregActNodo(NODO **cab, const char *regla);
 
-void eliminarRecursividad(NODO **cab);
-void imprimirExpresionRegular(NODO *cab);
+void primeraSustitucion(NODO *cab);
+void segundaSustitucion(NODO *cab);
+void reemplazarLlavesPorAsterisco(NODO *cab);
+void ImpExpRegRes(NODO *cab);
