@@ -302,7 +302,8 @@ void reemplazarLlavesPorAsterisco(NODO *cab)
     }
 }
 
-void ImpExpRegRes(NODO *cab) {
+void ImpExpRegRes(NODO *cab) 
+{
     if (cab == NULL) 
         return NULL;
     printf("La Expresion resultante es: %s\n", cab->prod);
